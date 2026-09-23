@@ -1,0 +1,15 @@
+{
+  "identificador_tributario": { "CO": "NIT", "EC": "RUC", "PE": "RUC", "PA": "RUC", "HN": "RTN" },
+  "pais_maestro": "CO",
+  "etiquetas_ambiguas": ["Identificación tributaria", "Número de identificación fiscal"],
+  "claves_bancarias": ["banco.nombre", "banco.tipo_cuenta", "banco.numero_cuenta", "banco.titular", "banco.swift"],
+  "nombres_soportes": {
+    "camara_comercio": "Certificado de Cámara de Comercio (existencia y representación legal)",
+    "rut": "RUT / registro tributario",
+    "certificacion_bancaria": "Certificación bancaria",
+    "parafiscales": "Certificación de parafiscales y seguridad social",
+    "estados_financieros": "Estados financieros",
+    "certificado_iso_9001": "Certificado ISO 9001",
+    "certificado_cumplimiento_tributario": "Certificado de cumplimiento tributario"
+  }
+}
