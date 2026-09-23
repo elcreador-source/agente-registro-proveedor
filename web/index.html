@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Registro de Proveedor · Agente</title>
+<style>
+  :root { --bg:#f6f7f9; --panel:#fff; --txt:#1d2330; --muted:#6b7280; --accent:#2f5bea; --user:#e8eefc; --ok:#15803d; --err:#b91c1c; --warn:#fff4d6; --warnb:#e0a100; --border:#e3e6eb; }
+  * { box-sizing:border-box; }
+  body { margin:0; font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif; background:var(--bg); color:var(--txt); display:flex; flex-direction:column; height:100vh; }
+  header { padding:12px 16px; background:var(--panel); border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; }
+  header h1 { font-size:17px; margin:0; }
+  header small { color:var(--muted); }
+  header button { font-size:13px; }
+  #chat { flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:12px; max-width:900px; width:100%; margin:0 auto; }
+  .msg { padding:10px 14px; border-radius:10px; max-width:100%; overflow-x:auto; flex-shrink:0; }
+  .usuario { background:var(--user); align-self:flex-end; max-width:85%; white-space:pre-wrap; }
+  .agente { background:var(--panel); border:1px solid var(--border); }
+  .agente.error { border-color:var(--err); color:var(--err); }
+  .agente.confirmar { background:var(--warn); border:2px solid var(--warnb); }
+  .banner { font-weight:600; color:#8a5a00; margin-bottom:6px; }
+  .acciones { margin-top:8px; display:flex; gap:8px; }
+  details.tool { font-size:13px; background:#f3f4f6; border:1px solid var(--border); border-radius:8px; padding:6px 10px; margin-bottom:6px; }
+  details.tool summary { cursor:pointer; }
+  details.tool pre { white-space:pre-wrap; word-break:break-word; margin:6px 0 0; font-size:12px; }
+  .ok { color:var(--ok); } .ko { color:var(--err); }
+  table { border-collapse:collapse; margin:6px 0; font-size:14px; }
+  th,td { border:1px solid var(--border); padding:4px 8px; text-align:left; }
+  code { background:#eef0f3; padding:1px 4px; border-radius:4px; font-size:13px; }
+  #pensando { color:var(--muted); font-style:italic; display:none; padding:0 16px 8px; max-width:900px; margin:0 auto; width:100%; }
+  form { display:flex; gap:8px; padding:12px 16px; background:var(--panel); border-top:1px solid var(--border); max-width:900px; width:100%; margin:0 auto; }
+  textarea { flex:1; resize:none; padding:10px; border:1px solid var(--border); border-radius:8px; font:inherit; min-height:44px; }
+  button { background:var(--accent); color:#fff; border:0; border-radius:8px; padding:0 16px; font:inherit; cursor:pointer; min-height:36px; }
+  button.sec { background:#e5e7eb; color:var(--txt); }
+  button:disabled { opacity:.5; cursor:default; }
+  .sugerencias { display:flex; gap:6px; flex-wrap:wrap; }
+  .sugerencias button { background:#eef2ff; color:var(--accent); font-size:13px; padding:4px 10px; }
+</style>
+</head>
+<body>
+<header>
+  <div><h1>Agente · Registro como Proveedor</h1><small id="estado">conectando…</small></div>
+  <button class="sec" id="nueva">Nueva sesión</button>
+</header>
+<main id="chat">
+  <div class="msg agente">
+    Hola. Puedo procesar solicitudes de registro como proveedor: leo la solicitud, lleno el formulario desde el maestro y armo el paquete para firma.
+    <div class="sugerencias" style="margin-top:8px">
+      <button data-p='Procesa el caso "ec-corp-andina". Dime qué campos quedaron llenos, cuáles faltan, si el paquete está listo para firma y qué soportes debo actualizar. No envíes nada todavía.'>ec-corp-andina (PDF)</button>
+      <button data-p='Procesa el caso "co-industrias-delta".'>co-industrias-delta (Excel)</button>
+      <button data-p='Procesa el caso "hn-agroexport-sula".'>hn-agroexport-sula (Excel)</button>
+      <button data-p='Procesa el caso "pa-logistica-istmo".'>pa-logistica-istmo (portal)</button>
+    </div>
+  </div>
+</main>
+<div id="pensando">El agente está pensando…</div>
+<form id="f">
+  <textarea id="m" placeholder="Escribe tu mensaje… (Enter para enviar)" rows="1"></textarea>
+  <button id="b">Enviar</button>
+</form>
+<script>
+const $ = (s) => document.querySelector(s)
+let sessionId = null
+try { sessionId = sessionStorage.getItem("sid") } catch {}
+
+const esc = (t) => t.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]))
+const inline = (t) => esc(t).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/`([^`]+)`/g, "<code>$1</code>")
+
+// Markdown mínimo: títulos, listas, tablas, negrita y código en línea.
+function md(texto) {
+  const lineas = texto.split("\n"); let html = ""; let i = 0
+  while (i < lineas.length) {
+    const l = lineas[i]
+    if (/^\s*\|/.test(l)) {
+      const filas = []; while (i < lineas.length && /^\s*\|/.test(lineas[i])) filas.push(lineas[i++])
+      const celdas = (f) => f.trim().replace(/^\||\|$/g, "").split("|").map((c) => c.trim())
+      const cuerpo = filas.filter((f) => !/^\s*\|[\s:|-]+\|\s*$/.test(f))
+      html += "<table>" + cuerpo.map((f, n) => "<tr>" + celdas(f).map((c) => n === 0 ? `<th>${inline(c)}</th>` : `<td>${inline(c)}</td>`).join("") + "</tr>").join("") + "</table>"
+      continue
+    }
+    if (/^\s*[-*] /.test(l)) {
+      html += "<ul>"; while (i < lineas.length && /^\s*[-*] /.test(lineas[i])) html += `<li>${inline(lineas[i++].replace(/^\s*[-*] /, ""))}</li>`
+      html += "</ul>"; continue
+    }
+    const h = l.match(/^(#{1,4})\s+(.*)/)
+    if (h) html += `<div style="font-weight:700;margin-top:6px">${inline(h[2])}</div>`
+    else if (l.trim()) html += `<div>${inline(l)}</div>`
+    i++
+  }
+  return html
+}
+
+function herramientas(calls) {
+  return calls.map((c) => `<details class="tool"><summary><span class="${c.ok ? "ok" : "ko"}">${c.ok ? "✔" : "✖"}</span> <b>${esc(c.nombre)}</b> — ${esc(c.resumen)}</summary><pre>${esc(JSON.stringify(c.args, null, 2))}</pre></details>`).join("")
+}
+
+function agregar(rol, contenido, opts = {}) {
+  const d = document.createElement("div")
+  d.className = `msg ${rol}${opts.error ? " error" : ""}${opts.confirmar ? " confirmar" : ""}`
+  if (rol === "usuario") d.textContent = contenido
+  else {
+    d.innerHTML = (opts.confirmar ? '<div class="banner">⚠ El agente necesita tu confirmación</div>' : "") + herramientas(opts.calls || []) + md(contenido)
+    if (opts.confirmar) {
+      const a = document.createElement("div"); a.className = "acciones"
+      a.innerHTML = '<button data-r="Sí, confirmo">Sí, confirmo</button><button class="sec" data-r="No, todavía no">No</button>'
+      a.addEventListener("click", (e) => { const r = e.target.dataset.r; if (r) { a.remove(); enviar(r) } })
+      d.appendChild(a)
+    }
+  }
+  $("#chat").appendChild(d); d.scrollIntoView({ behavior: "smooth", block: "end" })
+}
+
+async function enviar(texto) {
+  if (!texto.trim()) return
+  agregar("usuario", texto); $("#m").value = ""
+  $("#b").disabled = true; $("#pensando").style.display = "block"
+  try {
+    const r = await fetch("/api/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sessionId, message: texto }) })
+    const data = await r.json()
+    if (!r.ok) { agregar("agente", data.error || "Error del servidor", { error: true }); return }
+    sessionId = data.sessionId; try { sessionStorage.setItem("sid", sessionId) } catch {}
+    agregar("agente", data.reply, { calls: data.toolCalls, confirmar: data.needsConfirmation, error: data.error })
+  } catch {
+    agregar("agente", "No hay conexión con el servidor. Intenta de nuevo.", { error: true })
+  } finally {
+    $("#b").disabled = false; $("#pensando").style.display = "none"; $("#m").focus()
+  }
+}
+
+$("#f").addEventListener("submit", (e) => { e.preventDefault(); enviar($("#m").value) })
+$("#m").addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); enviar($("#m").value) } })
+document.querySelectorAll(".sugerencias button").forEach((b) => b.addEventListener("click", () => enviar(b.dataset.p)))
+$("#nueva").addEventListener("click", () => { try { sessionStorage.removeItem("sid") } catch {}; location.reload() })
+fetch("/api/health").then((r) => r.json()).then((h) => { $("#estado").textContent = `${h.provider} · ${h.model}` }).catch(() => { $("#estado").textContent = "sin conexión" })
+</script>
+</body>
+</html>
