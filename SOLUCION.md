@@ -97,8 +97,8 @@ Cambiar una regla de negocio, como agregar un país o una etiqueta ambigua, toca
 | 3 | **Ciclo manual con un adaptador propio** | Tool Runner del SDK o un framework de agentes (LangChain, etc.) | El PRD exige una interfaz propia intercambiable. El ciclo manual deja controlar el tope de iteraciones, el de tokens y la confirmación sin dependencias beta. |
 | 4 | **`node:http` sin framework** | Express o Fastify | Son 3 rutas y un HTML estático. Una dependencia menos que justificar y auditar. |
 | 5 | **PDF generado con `pdf-lib`** (etiqueta y valor en orden) | Rellenar un AcroForm | No hay PDF original del cliente en los fixtures y el PRD acepta un PDF generado. |
-| 7 | **`modulo/` generado y verificado desde las fuentes**, con reexport de las herramientas | Copiar los archivos a mano | Una copia a mano diverge en el primer cambio; así hay una sola fuente y la demo detecta cualquier desincronización. |
 | 6 | **El mapeo completo no se guarda en `out/log.jsonl`** | Loguear todos los argumentos | El mapeo incluye datos bancarios (RN2); el log registra `"[omitido]"`. |
+| 7 | **`modulo/` generado y verificado desde las fuentes**, con reexport de las herramientas | Copiar los archivos a mano | Una copia a mano diverge en el primer cambio; así hay una sola fuente y la demo detecta cualquier desincronización. |
 
 **Dependencias:**
 - `zod`: validación de argumentos, obligatoria.
