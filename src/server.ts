@@ -13,6 +13,8 @@ const entero = (v: string | undefined, porDefecto: number): number => (v && Numb
 const config = {
   puerto: entero(process.env.PORT, 3000),
   limites: { maxIteraciones: entero(process.env.MAX_ITERACIONES, 25), maxTokensSesion: entero(process.env.MAX_TOKENS_SESION, 300000) },
+  // Tope global del proceso: evita que abrir sesiones nuevas sin fin gaste la clave sin límite.
+  maxTokensTotal: entero(process.env.MAX_TOKENS_TOTAL, 3000000),
 }
 const llm = new AdaptadorAnthropic({
   modelo: process.env.ANTHROPIC_MODEL || "claude-sonnet-5",
@@ -46,6 +48,10 @@ async function chat(req: IncomingMessage, res: ServerResponse): Promise<void> {
   const cuerpo = cuerpoChat.safeParse(bruto)
   if (!cuerpo.success) return json(res, 400, { error: "se espera { sessionId?, message } con message de 1 a 4000 caracteres" })
   const id = cuerpo.data.sessionId ?? randomUUID()
+  const consumidos = [...sesiones.values()].reduce((t, s) => t + s.tokens, 0)
+  if (consumidos >= config.maxTokensTotal) {
+    return json(res, 200, { sessionId: id, reply: "El servicio alcanzó su tope de uso por hoy. Intenta más tarde.", toolCalls: [], needsConfirmation: false, error: true })
+  }
   const sesion = sesiones.get(id) ?? { id, mensajes: [], historial: [], tokens: 0, esperandoConfirmacion: false }
   sesiones.set(id, sesion)
   const system = await cargarSystemPrompt(dir)

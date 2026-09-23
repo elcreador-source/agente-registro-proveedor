@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: agente-registro-proveedor
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: ANTHROPIC_MODEL
+        value: claude-sonnet-5
+      - key: MAX_ITERACIONES
+        value: "25"
+      - key: MAX_TOKENS_SESION
+        value: "300000"
+      - key: MAX_TOKENS_TOTAL
+        value: "3000000"
