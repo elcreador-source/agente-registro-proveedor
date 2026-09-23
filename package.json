@@ -8,7 +8,9 @@
     "dev": "tsx watch src/server.ts",
     "start": "tsx src/server.ts",
     "demo": "tsx demo.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "modulo": "tsx src/modulo.ts",
+    "modulo:check": "tsx src/modulo.ts --check"
   },
   "engines": {
     "node": ">=20"

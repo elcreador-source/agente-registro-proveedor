@@ -97,6 +97,7 @@ Cambiar una regla de negocio, como agregar un país o una etiqueta ambigua, toca
 | 3 | **Ciclo manual con un adaptador propio** | Tool Runner del SDK o un framework de agentes (LangChain, etc.) | El PRD exige una interfaz propia intercambiable. El ciclo manual deja controlar el tope de iteraciones, el de tokens y la confirmación sin dependencias beta. |
 | 4 | **`node:http` sin framework** | Express o Fastify | Son 3 rutas y un HTML estático. Una dependencia menos que justificar y auditar. |
 | 5 | **PDF generado con `pdf-lib`** (etiqueta y valor en orden) | Rellenar un AcroForm | No hay PDF original del cliente en los fixtures y el PRD acepta un PDF generado. |
+| 7 | **`modulo/` generado y verificado desde las fuentes**, con reexport de las herramientas | Copiar los archivos a mano | Una copia a mano diverge en el primer cambio; así hay una sola fuente y la demo detecta cualquier desincronización. |
 | 6 | **El mapeo completo no se guarda en `out/log.jsonl`** | Loguear todos los argumentos | El mapeo incluye datos bancarios (RN2); el log registra `"[omitido]"`. |
 
 **Dependencias:**
@@ -127,7 +128,7 @@ Cambiar una regla de negocio, como agregar un país o una etiqueta ambigua, toca
 | HU-3 Generar formulario | **Hecho** (xlsx P0, pdf P1, portal P2 diseñado) | Producción: escribir sobre la plantilla original del cliente conservando formato, y AcroForm cuando exista. |
 | HU-4 Paquete para firma | **Hecho** | Checklist, borrador sin datos bancarios, bloqueo por vencido o ausente, envío simulado solo con confirmación. Producción: integración con firma electrónica y correo. |
 | HU-5 Manejo de errores | **Hecho** | Caso inexistente, argumentos inválidos, plantilla corrupta y formato no soportado devuelven `{ ok: false, error }` o advertencias; errores del modelo se muestran en el chat. |
-| Bonus `modulo/` | No hecho | — |
+| Bonus `modulo/` | **Hecho** | `agent.md` y `SKILL.md` se generan desde `agent/prompt.md` y `src/knowledge/registro-proveedor.md` (`npm run modulo`); `tools/proveedor.ts` reexporta `src/tools/proveedor.ts`. `demo.ts` y `npm run modulo:check` fallan si el módulo diverge. Producción: publicarlo como paquete versionado. |
 
 ## 9. Uso de IA
 

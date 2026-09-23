@@ -3,6 +3,7 @@
 import { promises as fs } from "node:fs"
 import path from "node:path"
 import { ejecutar } from "./src/tools/index.js"
+import { verificarModulo } from "./src/modulo.js"
 
 const directory = process.cwd()
 const ctx = { directory, sessionId: "demo" }
@@ -57,6 +58,10 @@ async function main(): Promise<void> {
   console.log("\n=== Envío con confirmación explícita (co-industrias-delta) ===")
   const envio = await llamar<{ ruta: string }>("proveedor_simular_envio", { caso: "co-industrias-delta", confirmado: true })
   console.log(`  ${envio.ok ? envio.data.ruta : envio.error}`)
+
+  console.log("\n=== Módulo reutilizable (bonus) ===")
+  const distintas = await verificarModulo(directory)
+  console.log(distintas.length ? `  DESINCRONIZADO: ${distintas.join(", ")} (ejecuta npm run modulo)` : "  modulo/ usa las mismas piezas que la aplicación")
 }
 
 main().catch((e: unknown) => {

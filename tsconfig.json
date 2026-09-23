@@ -10,5 +10,5 @@
     "resolveJsonModule": true,
     "types": ["node"]
   },
-  "include": ["src", "demo.ts"]
+  "include": ["src", "demo.ts", "modulo"]
 }

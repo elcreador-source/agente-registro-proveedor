@@ -64,6 +64,21 @@ src/server.ts                       API HTTP
 web/index.html                      front de chat
 demo.ts                             herramientas sin modelo
 render.yaml                         despliegue en Render
+src/modulo.ts                       genera y verifica modulo/
+modulo/                             bonus: agente empaquetado (agent.md, tools/, skill/)
+```
+
+## Módulo reutilizable (bonus)
+
+`modulo/` empaqueta el agente para otras plataformas sin depender del servidor:
+
+- `modulo/agent.md`: frontmatter (`description`, `mode: primary`, `permission { edit: deny, bash: deny }`) + el system prompt de `agent/prompt.md`.
+- `modulo/tools/proveedor.ts`: reexporta `src/tools/proveedor.ts` (mismas herramientas, importables sin el servidor).
+- `modulo/skill/registro-proveedor/SKILL.md`: frontmatter (`name`, `description`) + `src/knowledge/registro-proveedor.md`.
+
+```bash
+npm run modulo          # regenera modulo/ tras cambiar el prompt o el conocimiento
+npm run modulo:check    # falla si modulo/ diverge de las fuentes (también lo verifica demo.ts)
 ```
 
 ## Salidas (`out/`)
